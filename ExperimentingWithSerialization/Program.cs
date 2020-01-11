@@ -23,10 +23,19 @@ namespace ExperimentingWithSerialization
             stringvalue = inputtedstring;
             doublevalue = inputteddouble;
         }
+        public ClassThatHoldsStuff()
+        {
+
+        }
 
         public int Intvalue { get => intvalue; set => intvalue = value; }
         public string Stringvalue { get => stringvalue; set => stringvalue = value; }
         public double Doublevalue { get => doublevalue; set => doublevalue = value; }
+
+        public override string ToString()
+        {
+            return "IntValue is: " + intvalue + "\nString Value is: " + stringvalue + "\nDouble value is: " + doublevalue;
+        }
     }
     class Program
     {
@@ -34,31 +43,55 @@ namespace ExperimentingWithSerialization
         {
             bool successfulselection = false;
             int selection = 0;
-            while (!successfulselection)
+            bool runagain = true;
+            char mrRunAgainChar = 'Y';
+            while (runagain)
             {
-                try
+                while (!successfulselection)
                 {
-                    Console.WriteLine("Do you want to save a variable into memory or load a variable from memory? (1 or 2): ");
-                    string beforeparse = Console.ReadLine();
-                    selection = Int32.Parse(beforeparse);
-                    successfulselection = true;
+                    try
+                    {
+                        Console.WriteLine("Do you want to save a variable into memory or load a variable from memory? (1 or 2): ");
+                        string beforeparse = Console.ReadLine();
+                        selection = Int32.Parse(beforeparse);
+                        successfulselection = true;
+                    }
+                    catch (FormatException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
-                catch (FormatException ex)
+                successfulselection = false;
+                switch (selection)
                 {
-                    Console.WriteLine(ex.Message);
+                    case 1:
+                        SerializeMeCaptain();
+                        break;
+                    case 2:
+                        DeSerializeMeCaptain();
+                        break;
+                    default:
+                        Console.WriteLine("You failed to make a valid selection. The program will now terminate.");
+                        break;
                 }
-            }
-            switch(selection)
-            {
-                case 1:
-                    SerializeMeCaptain();
-                    break;
-                case 2:
-                    DeSerializeMeCaptain();
-                    break;
-                default:
-                    Console.WriteLine("You failed to make a valid selection. The program will now terminate.");
-                    break;
+                Console.WriteLine("Do you want to run this program again? (Y/N) ");
+                while (!successfulselection)
+                {
+                    try
+                    {
+                        mrRunAgainChar = char.ToUpper(char.Parse(Console.ReadLine()));
+                        successfulselection = true;
+                    }
+                    catch(FormatException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                if(mrRunAgainChar != 'Y')
+                {
+                    runagain = false;
+                }
+                successfulselection = false;
             }
         }
 
@@ -126,7 +159,51 @@ namespace ExperimentingWithSerialization
 
         static void DeSerializeMeCaptain()
         {
-            Console.WriteLine("You are in the Deserialize function!");
+            string mrjsonstring = "";
+            string filename = "";
+            Console.WriteLine("Enter a filename to deserialize from: ");
+            filename = Console.ReadLine();
+            mrjsonstring = File.ReadAllText(filename);
+            Console.WriteLine($"File string is outputting as: {mrjsonstring}");
+            bool validselection = false;
+            int choice = 0;
+            while (!validselection)
+            {
+                try
+                {
+                    Console.WriteLine("Make a determination of value to read this into: int (1), string (2), double (3), ClassThatHoldsStuff (4)");
+                    string selection = Console.ReadLine();
+                    choice = Int32.Parse(selection);
+                    validselection = true;
+                }
+                catch (FormatException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            Console.WriteLine("The serialized data is as follows: ");
+            switch (choice)
+            {
+                case 1:
+                    int intserializeddata = JsonSerializer.Deserialize<int>(mrjsonstring);
+                    Console.WriteLine(intserializeddata);
+                    break;
+                case 2:
+                    string stringserializeddata = JsonSerializer.Deserialize<string>(mrjsonstring);
+                    Console.WriteLine(stringserializeddata);
+                    break;
+                case 3:
+                    double doubleserializeddata = JsonSerializer.Deserialize<double>(mrjsonstring);
+                    Console.WriteLine(doubleserializeddata);
+                    break;
+                case 4:
+                    ClassThatHoldsStuff ClassThatHoldsStuffserializeddata = JsonSerializer.Deserialize<ClassThatHoldsStuff>(mrjsonstring);
+                    Console.WriteLine(ClassThatHoldsStuffserializeddata);
+                    break;
+                default:
+                    Console.WriteLine("I was not given a valid choice and will now terminate.");
+                    break;
+            }
         }
     }
 }
