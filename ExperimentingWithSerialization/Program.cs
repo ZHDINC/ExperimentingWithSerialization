@@ -68,6 +68,7 @@ namespace ExperimentingWithSerialization
             int choice = 0;
             bool successfulselection = false;
             string mrserializer = "";
+            bool nothingtoserialize = false;
             while (!successfulselection)
             {
                 try
@@ -109,12 +110,17 @@ namespace ExperimentingWithSerialization
                     break;
                 default:
                     Console.WriteLine("Well, if you didn't want to serialize something, then why did you enter this function?");
+                    nothingtoserialize = true;
                     break;
             }
-            string filename = "" ;
-            Console.WriteLine("Enter file name to serialize to: ");
-            filename = Console.ReadLine();
-            File.WriteAllText(filename, mrserializer);
+            while (!nothingtoserialize)
+            {
+                string filename = "";
+                Console.WriteLine("Enter file name to serialize to: ");
+                filename = Console.ReadLine();
+                File.WriteAllText(filename, mrserializer);
+                nothingtoserialize = true;
+            }
 
         }
 
