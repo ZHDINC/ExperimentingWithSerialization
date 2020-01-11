@@ -161,48 +161,84 @@ namespace ExperimentingWithSerialization
         {
             string mrjsonstring = "";
             string filename = "";
-            Console.WriteLine("Enter a filename to deserialize from: ");
-            filename = Console.ReadLine();
-            mrjsonstring = File.ReadAllText(filename);
-            Console.WriteLine($"File string is outputting as: {mrjsonstring}");
-            bool validselection = false;
-            int choice = 0;
-            while (!validselection)
+            bool fileExists = true;
+            bool foundFiles = false;
+            Console.WriteLine("Here is the list of *.json files in the current directory: ");
+            DirectoryInfo directoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            FileInfo[] files = directoryInfo.GetFiles("*.json");
+            foreach (FileInfo file in files)
             {
+                Console.WriteLine(file);
+                foundFiles = true;
+            }
+            if(!foundFiles)
+            {
+                Console.WriteLine("Did not find any *.json files.");
+                fileExists = false;
+            }
+            while (foundFiles)
+            {
+                Console.WriteLine("Enter a filename to deserialize from: ");
                 try
                 {
-                    Console.WriteLine("Make a determination of value to read this into: int (1), string (2), double (3), ClassThatHoldsStuff (4)");
-                    string selection = Console.ReadLine();
-                    choice = Int32.Parse(selection);
-                    validselection = true;
+                    filename = Console.ReadLine();
+                    mrjsonstring = File.ReadAllText(filename);
+                    foundFiles = false;
                 }
-                catch (FormatException ex)
+                catch (FileNotFoundException ex)
                 {
                     Console.WriteLine(ex.Message);
+                    fileExists = false;
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    fileExists = false;
                 }
             }
-            Console.WriteLine("The serialized data is as follows: ");
-            switch (choice)
+            while (fileExists)
             {
-                case 1:
-                    int intserializeddata = JsonSerializer.Deserialize<int>(mrjsonstring);
-                    Console.WriteLine(intserializeddata);
-                    break;
-                case 2:
-                    string stringserializeddata = JsonSerializer.Deserialize<string>(mrjsonstring);
-                    Console.WriteLine(stringserializeddata);
-                    break;
-                case 3:
-                    double doubleserializeddata = JsonSerializer.Deserialize<double>(mrjsonstring);
-                    Console.WriteLine(doubleserializeddata);
-                    break;
-                case 4:
-                    ClassThatHoldsStuff ClassThatHoldsStuffserializeddata = JsonSerializer.Deserialize<ClassThatHoldsStuff>(mrjsonstring);
-                    Console.WriteLine(ClassThatHoldsStuffserializeddata);
-                    break;
-                default:
-                    Console.WriteLine("I was not given a valid choice and will now terminate.");
-                    break;
+                Console.WriteLine($"File string is outputting as: {mrjsonstring}");
+                bool validselection = false;
+                int choice = 0;
+                while (!validselection)
+                {
+                    try
+                    {
+                        Console.WriteLine("Make a determination of value to read this into: int (1), string (2), double (3), ClassThatHoldsStuff (4)");
+                        string selection = Console.ReadLine();
+                        choice = Int32.Parse(selection);
+                        validselection = true;
+                    }
+                    catch (FormatException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                Console.WriteLine("The serialized data is as follows: ");
+                switch (choice)
+                {
+                    case 1:
+                        int intserializeddata = JsonSerializer.Deserialize<int>(mrjsonstring);
+                        Console.WriteLine(intserializeddata);
+                        break;
+                    case 2:
+                        string stringserializeddata = JsonSerializer.Deserialize<string>(mrjsonstring);
+                        Console.WriteLine(stringserializeddata);
+                        break;
+                    case 3:
+                        double doubleserializeddata = JsonSerializer.Deserialize<double>(mrjsonstring);
+                        Console.WriteLine(doubleserializeddata);
+                        break;
+                    case 4:
+                        ClassThatHoldsStuff ClassThatHoldsStuffserializeddata = JsonSerializer.Deserialize<ClassThatHoldsStuff>(mrjsonstring);
+                        Console.WriteLine(ClassThatHoldsStuffserializeddata);
+                        break;
+                    default:
+                        Console.WriteLine("I was not given a valid choice and will now terminate.");
+                        break;
+                }
+                fileExists = false;
             }
         }
     }
