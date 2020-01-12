@@ -11,7 +11,7 @@ using System.IO;
 
 namespace ExperimentingWithSerialization
 {
-    class ClassThatHoldsStuff
+    public class ClassThatHoldsStuff
     {
         int intvalue = 0;
         string stringvalue = "";
@@ -51,7 +51,9 @@ namespace ExperimentingWithSerialization
                 {
                     try
                     {
-                        Console.WriteLine("Do you want to save a variable into memory or load a variable from memory? (1 or 2): ");
+                        Console.WriteLine("Do you want to save a variable into memory or load a variable from memory? Valid selections are (1-4) ");
+                        Console.WriteLine("JSON - Serialize (1) Deserialize (2)");
+                        Console.WriteLine("XML - Serialize (3) Deserialize (4)");
                         string beforeparse = Console.ReadLine();
                         selection = Int32.Parse(beforeparse);
                         successfulselection = true;
@@ -65,13 +67,19 @@ namespace ExperimentingWithSerialization
                 switch (selection)
                 {
                     case 1:
-                        SerializeMeCaptain();
+                        SerializeMeCaptainJSON();
                         break;
                     case 2:
-                        DeSerializeMeCaptain();
+                        DeSerializeMeCaptainJSON();
+                        break;
+                    case 3:
+                        SerializeMeCaptainXML();
+                        break;
+                    case 4:
+                        DeSerializeMeCaptainXML();
                         break;
                     default:
-                        Console.WriteLine("You failed to make a valid selection. The program will now terminate.");
+                        Console.WriteLine("You failed to make a valid selection.");
                         break;
                 }
                 Console.WriteLine("Do you want to run this program again? (Y/N) ");
@@ -95,26 +103,14 @@ namespace ExperimentingWithSerialization
             }
         }
 
-        static void SerializeMeCaptain()
+        static void SerializeMeCaptainJSON()
         {
             string stringtoserialize = "";
             int choice = 0;
-            bool successfulselection = false;
             string mrserializer = "";
-            bool nothingtoserialize = false;
-            while (!successfulselection)
+            while (choice == 0)
             {
-                try
-                {
-                    Console.WriteLine("What do you want to serialize? int (1), string (2), double (3), or ClassThatHoldsStuff (4): ");
-                    string selectionstring = Console.ReadLine();
-                    choice = Int32.Parse(selectionstring);
-                    successfulselection = true;
-                }
-                catch(FormatException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                choice = SelectingChoiceOfType("serialize");
             }
             switch(choice)
             {
@@ -136,31 +132,23 @@ namespace ExperimentingWithSerialization
                 case 4:
                     Console.WriteLine("Enter an int value to serialize: ");
                     Int32.TryParse(Console.ReadLine(), out int inttoserialize2);
+                    Console.WriteLine("Enter a string to serialize: ");
                     stringtoserialize = Console.ReadLine();
+                    Console.WriteLine("Enter a double to serialize: ");
                     Double.TryParse(Console.ReadLine(), out double doubletoserialize2);
                     ClassThatHoldsStuff mrclass = new ClassThatHoldsStuff(inttoserialize2, stringtoserialize, doubletoserialize2);
                     mrserializer = JsonSerializer.Serialize(mrclass);
                     break;
                 default:
                     Console.WriteLine("Well, if you didn't want to serialize something, then why did you enter this function?");
-                    nothingtoserialize = true;
                     break;
             }
-            while (!nothingtoserialize)
-            {
-                string filename = "";
-                Console.WriteLine("Enter file name to serialize to: ");
-                filename = Console.ReadLine();
-                File.WriteAllText(filename, mrserializer);
-                nothingtoserialize = true;
-            }
-
+            while (WriteToFile(mrserializer) && mrserializer != "") ;
         }
 
-        static void DeSerializeMeCaptain()
+        static void DeSerializeMeCaptainJSON()
         {
             string mrjsonstring = "";
-            string filename = "";
             bool fileExists = true;
             bool foundFiles = false;
             Console.WriteLine("Here is the list of *.json files in the current directory: ");
@@ -181,7 +169,7 @@ namespace ExperimentingWithSerialization
                 Console.WriteLine("Enter a filename to deserialize from: ");
                 try
                 {
-                    filename = Console.ReadLine();
+                    string filename = Console.ReadLine();
                     mrjsonstring = File.ReadAllText(filename);
                     foundFiles = false;
                 }
@@ -199,21 +187,10 @@ namespace ExperimentingWithSerialization
             while (fileExists)
             {
                 Console.WriteLine($"File string is outputting as: {mrjsonstring}");
-                bool validselection = false;
                 int choice = 0;
-                while (!validselection)
+                while (choice == 0)
                 {
-                    try
-                    {
-                        Console.WriteLine("Make a determination of value to read this into: int (1), string (2), double (3), ClassThatHoldsStuff (4)");
-                        string selection = Console.ReadLine();
-                        choice = Int32.Parse(selection);
-                        validselection = true;
-                    }
-                    catch (FormatException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
+                    SelectingChoiceOfType("deserialize");
                 }
                 Console.WriteLine("The serialized data is as follows: ");
                 switch (choice)
@@ -240,6 +217,81 @@ namespace ExperimentingWithSerialization
                 }
                 fileExists = false;
             }
+        }
+
+        static void SerializeMeCaptainXML()
+        {
+            int choice = 0;
+            while(choice == 0)
+            {
+                choice = SelectingChoiceOfType("serialize");
+            }
+            Console.WriteLine("Choose XML file name to serialize to: ");
+            string filename = Console.ReadLine();
+            StreamWriter streamWriter = new StreamWriter(filename);
+            switch (choice)
+            {
+                case 1:
+                    XmlSerializer intXmlSerializer = new XmlSerializer(typeof(int));
+                    Int32.TryParse(Console.ReadLine(), out int intValueToSerialize);
+                    intXmlSerializer.Serialize(streamWriter, intValueToSerialize);
+                    break;
+                case 2:
+                    XmlSerializer stringXmlSerializer = new XmlSerializer(typeof(string));
+                    string stringToSerialize = Console.ReadLine();
+                    stringXmlSerializer.Serialize(streamWriter, stringToSerialize);
+                    break;
+                case 3:
+                    XmlSerializer doubleXmlSerializer = new XmlSerializer(typeof(double));
+                    Double.TryParse(Console.ReadLine(), out double doubleValueToSerialize);
+                    doubleXmlSerializer.Serialize(streamWriter, doubleValueToSerialize);
+                    break;
+                case 4:
+                    XmlSerializer ClassThatHoldStuffXmlSerializer = new XmlSerializer(typeof(ClassThatHoldsStuff));
+                    Console.WriteLine("Enter an int value to serialize: ");
+                    Int32.TryParse(Console.ReadLine(), out int inttoserialize2);
+                    Console.WriteLine("Enter a string to serialize: ");
+                    string stringtoserialize = Console.ReadLine();
+                    Console.WriteLine("Enter a double to serialize: ");
+                    Double.TryParse(Console.ReadLine(), out double doubletoserialize2);
+                    ClassThatHoldsStuff mrclass = new ClassThatHoldsStuff(inttoserialize2, stringtoserialize, doubletoserialize2);
+                    ClassThatHoldStuffXmlSerializer.Serialize(streamWriter, mrclass);
+                    break;
+                default:
+                    Console.WriteLine("XML serialization method was not given a valid choice and will now terminate. No XML Serialization for you!");
+                    break;
+            }
+            streamWriter.Close();
+        }
+
+        static void DeSerializeMeCaptainXML()
+        {
+
+        }
+
+        static int SelectingChoiceOfType(string verbiage)
+        {
+            int choice = 0;
+            try
+            {
+                Console.WriteLine($"What do you want to {verbiage}? int (1), string (2), double (3), or ClassThatHoldsStuff (4): ");
+                string selectionstring = Console.ReadLine();
+                choice = Int32.Parse(selectionstring);
+            }
+            catch (FormatException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return choice;
+        }
+
+        static bool WriteToFile(string jsonstring)
+        {
+            string filename = "";
+            Console.WriteLine("Enter file name to serialize to: ");
+            filename = Console.ReadLine();
+            File.WriteAllText(filename, jsonstring);
+            return false;
         }
     }
 }
