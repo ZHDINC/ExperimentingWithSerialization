@@ -190,7 +190,7 @@ namespace ExperimentingWithSerialization
                 int choice = 0;
                 while (choice == 0)
                 {
-                    SelectingChoiceOfType("deserialize");
+                    choice = SelectingChoiceOfType("deserialize");
                 }
                 Console.WriteLine("The serialized data is as follows: ");
                 switch (choice)
